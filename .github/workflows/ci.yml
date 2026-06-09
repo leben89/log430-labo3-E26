@@ -22,34 +22,24 @@ jobs:
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_DB=0" >> .env
 
+      - name: Cleanup old deployment
+        run: |
+          docker-compose down -v || true
+          docker container prune -f
+
       - name: Build containers
-        run: docker-compose build
+        run: |
+          docker-compose build
 
       - name: Start containers
-        run: docker-compose up -d
+        run: |
+          docker-compose up -d --force-recreate
 
       - name: Wait for services
-        run: sleep 20
-
-      - name: Show store_manager logs
         run: |
-          docker logs $(docker ps -qf "name=store_manager")
+          sleep 30
 
-      - name: Remove pytest cache
-        run: |
-          rm -rf .pytest_cache
-          
       - name: Run tests
         run: |
           docker exec $(docker ps -qf "name=store_manager") \
           pytest -v -p no:cacheprovider
-
-      - name: Cleanup permissions
-        if: always()
-        run: |
-          sudo chown -R runner:runner .
-
-      - name: Show logs
-        if: always()
-        run: |
-          docker logs $(docker ps -qf "name=store_manager")
