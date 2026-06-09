@@ -33,6 +33,8 @@ def set_stock_for_product(product_id, quantity):
             Product.id == product_id
         ).first()
 
+        print("PRODUCT =", product)
+        
         r.hset(
             f"stock:{product_id}",
             mapping={
@@ -45,6 +47,7 @@ def set_stock_for_product(product_id, quantity):
         print("REDIS =", r.hgetall(f"stock:{product_id}"))
         return response_message
     except Exception as e:
+        print("ERREUR STOCK:", e)
         session.rollback()
         raise e
     finally:
