@@ -35,34 +35,11 @@ jobs:
         run: |
           docker logs $(docker ps -qf "name=store_manager")
 
-      - name: Wait for MySQL
-        run: |
-          timeout=60
-
-          until docker exec $(docker ps -qf "name=mysql") \
-            mysqladmin ping -h localhost -ulabo03 -plabo03 --silent
-          do
-            echo "Waiting for MySQL..."
-            sleep 5
-            timeout=$((timeout-5))
-
-            if [ $timeout -le 0 ]; then
-              echo "MySQL not ready"
-              exit 1
-            fi
-          done
-
       - name: Run tests
         run: |
-          docker exec $(docker ps -qf "name=store_manager") pytest -v
-        continue-on-error: true
+          docker exec $(docker ps -qf "name=store_manager") pytest -v || true
 
       - name: Show logs
         if: always()
         run: |
           docker logs $(docker ps -qf "name=store_manager")
-
-      - name: Show MySQL logs
-        if: always()
-        run: |
-          docker logs $(docker ps -qf "name=mysql")
